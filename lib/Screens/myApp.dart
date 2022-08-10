@@ -1,10 +1,13 @@
-import 'dart:io';
-
+import 'package:file_upload/Services/storage_services.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/rendering.dart';
+import '../Services/extended_methods.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -12,6 +15,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   PlatformFile? file;
+  bool colorSwitch = true;
+  Color? color1 = Colors.grey[200];
+  Color? color2 = Colors.grey[300];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,45 +34,92 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               flex: 3,
               child: Container(
-                width: double.infinity,
+                clipBehavior: Clip.hardEdge,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(15),
+                  color: color1,
                 ),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: 50,
-                  itemBuilder: ((context, index) {
-                    return Container(
-                      padding: const EdgeInsets.all(10),
-                      width: double.infinity,
-                      child: Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text("FileName"),
-                            Icon(Icons.download)
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                  separatorBuilder: ((context, index) {
-                    return Container(
-                      padding: const EdgeInsets.all(10),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                      ),
-                      child: Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text("FileName"),
-                            Icon(Icons.download)
-                          ],
-                        ),
-                      ),
+                child: FutureBuilder<List<Reference>>(
+                  future: CloudStorage().showFiles(),
+                  builder: ((context, snapshot) {
+                    if (snapshot.hasData) {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: ((context, index) {
+                          colorSwitch = !colorSwitch;
+                          if (index % 2 == 0) {
+                            return Container(
+                              color: color1,
+                              padding: const EdgeInsets.all(8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width / 3,
+                                    child: Text(
+                                      snapshot.data![index].name,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () async {
+                                      var url = Uri.parse(await snapshot
+                                          .data![index]
+                                          .getDownloadURL());
+                                      if (!await launchUrl(url,
+                                          mode: LaunchMode.platformDefault)) {}
+                                      debugPrint(url.toString());
+                                    },
+                                    icon: const Icon(
+                                      Icons.download,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return Container(
+                            color: color2,
+                            padding: const EdgeInsets.all(8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                SizedBox(
+                                  width: 100,
+                                  child: Text(
+                                    snapshot.data![index].name,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () async {
+                                    var url = Uri.parse(await snapshot
+                                        .data![index]
+                                        .getDownloadURL());
+                                    if (!await launchUrl(url,
+                                        mode: LaunchMode.platformDefault)) {}
+                                    debugPrint(url.toString());
+                                  },
+                                  icon: const Icon(
+                                    Icons.download,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      );
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    return const Center(
+                      child: Text("Network Failed!"),
                     );
                   }),
                 ),
@@ -107,7 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        // CloudStorage().uploadFile(platformFile: file!);
+                        CloudStorage().showFiles();
+                      },
                       child: const Text("Upload File"),
                     ),
                   ],
