@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 10),
             Expanded(
-              flex: 3,
+              flex: 2,
               child: Container(
                 clipBehavior: Clip.hardEdge,
                 decoration: BoxDecoration(
@@ -126,6 +126,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            IconButton(
+              onPressed: () {
+                setState(() {});
+              },
+              icon: const Icon(Icons.refresh),
+            ),
             Expanded(
               flex: 1,
               child: Container(
@@ -162,8 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
-                        // CloudStorage().uploadFile(platformFile: file!);
-                        CloudStorage().showFiles();
+                        CloudStorage().uploadFile(context, platformFile: file!);
                       },
                       child: const Text("Upload File"),
                     ),
