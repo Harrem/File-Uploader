@@ -4,6 +4,7 @@ file uploading app to upload files to firestore
 ###Features
   * Picking Files
   * Uploading files to Firebase Storage
+  * Opening download link in default app
   * Viewing Firebase Storage Files
   * Showing a snackbar when upload is completed
  
