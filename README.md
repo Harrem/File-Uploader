@@ -1,4 +1,4 @@
-# file_upload
+# file_uploader
 file uploading app to upload files to firestore
 
 ###Features
